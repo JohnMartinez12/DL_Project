@@ -55,7 +55,7 @@ print("Failures =",failures)
 print("Writing to csv...")
 
 file = open("submission.csv","w")
-file.write("id, images")
+file.write("id,images")
 clusters = [c for c in clusters if c != None]
 
 for cluster in clusters:
