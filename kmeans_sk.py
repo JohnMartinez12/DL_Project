@@ -5,8 +5,8 @@ np.random.seed(0)
 
 # Loading image names and vectors 
 print("Loading data...")
-data_dir_query = 'Dataset_Directory/query'
-data_dir_database = 'Dataset_Directory/test'
+data_dir_query = '/scratch/ss8464/landmark/test'
+data_dir_database = '/scratch/ss8464/landmark/index'
 
 feature_dir_query = 'feature_query_np.npy'
 feature_dir_database = 'feature_test_np.npy'
