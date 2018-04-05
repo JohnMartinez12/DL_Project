@@ -11,14 +11,13 @@ data_dir_database = '/scratch/ss8464/landmark/index'
 feature_dir_query = 'feature_query_np.npy'
 feature_dir_database = 'feature_test_np.npy'
 
-feature_size = 1000
-
 imgs_query = [i[:-4] for i in listdir(data_dir_query)]
 imgs_database = [i[:-4] for i in listdir(data_dir_database)]
 
-k = 15000
-
-query = np.load(feature_dir_query).reshape(k, feature_size)
+k = len(imgs_query)
+query = np.load(feature_dir_query)
+feature_size = query.shape[-1]
+query = query.reshape(k, feature_size)
 database = np.load(feature_dir_database).reshape(len(imgs_database), feature_size)
 
 # Performing kmeans
