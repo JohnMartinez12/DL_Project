@@ -16,7 +16,7 @@ feature_size = 1000
 imgs_query = [i[:-4] for i in listdir(data_dir_query)]
 imgs_database = [i[:-4] for i in listdir(data_dir_database)]
 
-k = len(imgs_query)
+k = 15000
 
 query = np.load(feature_dir_query).reshape(k, feature_size)
 database = np.load(feature_dir_database).reshape(len(imgs_database), feature_size)
