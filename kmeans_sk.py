@@ -21,7 +21,7 @@ database = database.reshape(len(imgs_database), feature_size)
 # Getting silhouette_score k
 sil_coeff1 = []
 for n_cluster in range(100, len(imgs_query)):
-    kmeans = KMeans(n_clusters=n_cluster).fit(X)
+    kmeans = KMeans(n_clusters=n_cluster).fit(database)
     label = kmeans.labels_
     sil_coeff = silhouette_score(database, label, metric='euclidean')
     sil_coeff1.append(sil_coeff)
