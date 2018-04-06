@@ -19,15 +19,16 @@ database = np.vstack([np.load(feature_dir_database+'/'+i) for i in imgs_database
 database = database.reshape(len(imgs_database), feature_size)
 
 # Getting silhouette_score k
+sil_coeff1 = []
 for n_cluster in range(100, len(imgs_query)):
     kmeans = KMeans(n_clusters=n_cluster).fit(X)
     label = kmeans.labels_
     sil_coeff = silhouette_score(database, label, metric='euclidean')
-    sil_coeff.append(sil_coeff)
-    sil_coeff = np.array(sil_coeff)
+    sil_coeff1.append(sil_coeff)
+    
 
 # using k with maximum silhouette_score as numbe of clusters for kmeans
-k = np.max(sil_coeff)
+k = np.max(np.array(sil_coeff1))
 
 # Performing kmeans
 print("Clustering...")
