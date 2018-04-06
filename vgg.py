@@ -6,10 +6,10 @@ from os.path import join
 from scipy.misc import imread, imresize
 from math import*
 import heapq
-import time
+from time import time
 
-data_dir_query = '/scratch/ss8464/landmark/test'
-data_dir_database = '/scratch/ss8464/landmark/index'
+data_dir_query = 'Dataset_Directory/query'
+data_dir_database = 'Dataset_Directory/test'
 
 feature_dir_query = 'feature_query_np'
 feature_dir_database = 'feature_test_np'
@@ -21,7 +21,7 @@ parameters = []
 
 # - - - - Convolutional Layers - - - - 
 
-# zero-mean input (normalization?)
+# zero-mean input 
 with tf.name_scope('preprocess') as scope:
 	mean = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32, shape=[1, 1, 1, 3], name='img_mean')
 	images = imgs-mean
@@ -242,45 +242,72 @@ with tf.name_scope('fc3') as scope:
 	fc3 = tf.nn.relu(fc3l)
 	parameters += [fc3w, fc3b]
 	
+def min(s):
+	return "%.2f min" % (s/60)
 	
 with tf.Session() as sess:
 	# Loading weights
+	print('Load weights...')
+	t0 = time()
 	weight_file = 'vgg16_weights.npz'
 	weights = np.load(weight_file)
 	keys = sorted(weights.keys())
-	print('Load weights...')
 	for i, k in enumerate(keys):
 		sess.run(parameters[i].assign(weights[k]))
-	print('Load complete.')
+	t1 = time()
+	print('Load complete. Time:',min(t1-t0))
 	
 	# Loading images 
 	imgs_query = []
 	imgs_database = []
 	
-	features_query = []
-	features_database = []
+	features_query = np.empty((0,1000),float)
+	features_database = np.empty((0,1000),float)
 	
-	print('Load images...')
-	for i in listdir(data_dir_query):		
-		img_query = imread(data_dir_query+'/'+i)
+	dirs_query = listdir(data_dir_query)
+	dirs_database = listdir(data_dir_database)
+	
+	n_query = len(dirs_query)
+	n_database = len(dirs_database)
+	
+	step_query = n_query // 100
+	step_database = n_database // 100
+	
+	print('Load/save query images...')
+	for i, d in enumerate(dirs_query):	
+		t0 = time()	
+		img_query = imread(data_dir_query+'/'+d)
 		img_query = imresize(img_query, (224, 224))
 		imgs_query.append(img_query)
 		feature_query = sess.run(fc3, feed_dict={imgs: [img_query]})
-		features_query.append(feature_query)
-
-	for i in listdir(data_dir_database):
-		img_database = imread(data_dir_database+'/'+i)
+		features_query = np.vstack([features_query, feature_query])
+		# Show progress, save
+		if i % step_query == 0:
+			t1 = time()
+			print("Progress: %.2f%% Time:" % (i/n_query),min(t1-t0))
+			np.save(feature_dir_query, np.array(features_query))
+	
+	np.save(feature_dir_query, np.array(features_query))
+	print("Query images complete.")	
+	
+	print("Load/save database images...")
+	for i, d in enumerate(dirs_database):
+		t0 = time()
+		img_database = imread(data_dir_database+'/'+d)
 		img_database = imresize(img_database, (224, 224))
 		imgs_database.append(img_database)
 		feature_database = sess.run(fc3, feed_dict={imgs: [img_database]})
-		features_database.append(feature_database)
-	
-	print('Load complete.')
-	
-	print("Saving query vectors")
-	np.save(feature_dir_query, np.array(features_query))
-	
-	print("Saving database vectors")
+		features_database = np.vstack([features_database, feature_database])
+		
+		# Show progress, save
+		if i % step_database == 0:
+			t1 = time()
+			print("Progress: %.2f%% Time:" % (i/n_database),min(t1-t0))
+			np.save(feature_dir_database, np.array(features_database))
+			
 	np.save(feature_dir_database, np.array(features_database))
+	print('Database images complete.')
+	
+	
 	
 	print("Saving complete.")
