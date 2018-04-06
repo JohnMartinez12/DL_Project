@@ -5,20 +5,18 @@ np.random.seed(0)
 
 # Loading image names and vectors 
 print("Loading data...")
-data_dir_query = '/scratch/ss8464/landmark/test'
-data_dir_database = '/scratch/ss8464/landmark/index'
+feature_dir_query = 'feature_query_np'
+feature_dir_database = 'feature_test_np'
 
-feature_dir_query = 'feature_query_np.npy'
-feature_dir_database = 'feature_test_np.npy'
-
-imgs_query = [i[:-4] for i in listdir(data_dir_query)]
-imgs_database = [i[:-4] for i in listdir(data_dir_database)]
+imgs_query = [i for i in listdir(feature_dir_query)]
+imgs_database = [i for i in listdir(feature_dir_database)]
 
 k = len(imgs_query)
-query = np.load(feature_dir_query)
+query = np.vstack([np.load(feature_dir_query+'/'+i) for i in imgs_query])
 feature_size = query.shape[-1]
 query = query.reshape(k, feature_size)
-database = np.load(feature_dir_database).reshape(len(imgs_database), feature_size)
+database = np.vstack([np.load(feature_dir_database+'/'+i) for i in imgs_database])
+database = database.reshape(len(imgs_database), feature_size)
 
 # Performing kmeans
 print("Clustering...")
@@ -35,14 +33,14 @@ for img in imgs_query:
 	if clusters[cluster_id] != None:
 		overwrites += 1
  	
-	clusters[cluster_id] = [img]
+	clusters[cluster_id] = [img[:-4]]
 	idx += 1
 
 failures = 0
 for img in imgs_database:
 	cluster_id = pred[idx]
 	if clusters[cluster_id] != None:
-		clusters[cluster_id].append(img)
+		clusters[cluster_id].append(img[:-4])
 	else:
 		failures += 1
 	idx += 1

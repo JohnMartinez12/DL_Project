@@ -1,11 +1,8 @@
 import tensorflow as tf
 import numpy as np
-import scipy.spatial.distance
 from os import listdir
-from os.path import join
+import os
 from scipy.misc import imread, imresize
-from math import*
-import heapq
 from time import time
 
 data_dir_query = 'Dataset_Directory/query'
@@ -245,6 +242,29 @@ with tf.name_scope('fc3') as scope:
 def min(s):
 	return "%.2f min" % (s/60)
 	
+def load_save_features(sess, data_dir, dirs, feature_dir):
+	# Creating the directory for query images 
+	if not os.path.exists(feature_dir):
+		os.mkdir(feature_dir)
+	n_dir = len(dirs)
+	step_dir = n_dir // 100
+	for i, d in enumerate(dirs):
+		path = feature_dir+'/'+d[:-4]
+		if os.path.exists(path+'.npy'):
+			continue
+		t0 = time()
+		# Reading the image 
+		img = imread(data_dir+'/'+d)
+		img = imresize(img, (224, 224))
+		# Getting, saving the feature vector
+		feature = sess.run(fc3, feed_dict={imgs: [img]})
+		np.save(path, feature)	
+		# Show progress
+		if i % step_dir == 0:
+			t1 = time()
+			print("Progress: %.2f%% Time:" % (100*i/n_dir),min(t1-t0))	
+		
+	
 with tf.Session() as sess:
 	# Loading weights
 	print('Load weights...')
@@ -258,12 +278,6 @@ with tf.Session() as sess:
 	print('Load complete. Time:',min(t1-t0))
 	
 	# Loading images 
-	imgs_query = []
-	imgs_database = []
-	
-	features_query = np.empty((0,1000),float)
-	features_database = np.empty((0,1000),float)
-	
 	dirs_query = listdir(data_dir_query)
 	dirs_database = listdir(data_dir_database)
 	
@@ -274,40 +288,10 @@ with tf.Session() as sess:
 	step_database = n_database // 100
 	
 	print('Load/save query images...')
-	for i, d in enumerate(dirs_query):	
-		t0 = time()	
-		img_query = imread(data_dir_query+'/'+d)
-		img_query = imresize(img_query, (224, 224))
-		imgs_query.append(img_query)
-		feature_query = sess.run(fc3, feed_dict={imgs: [img_query]})
-		features_query = np.vstack([features_query, feature_query])
-		# Show progress, save
-		if i % step_query == 0:
-			t1 = time()
-			print("Progress: %.2f%% Time:" % (i/n_query),min(t1-t0))
-			np.save(feature_dir_query, np.array(features_query))
-	
-	np.save(feature_dir_query, np.array(features_query))
+	load_save_features(sess, data_dir_query, dirs_query, feature_dir_query)
 	print("Query images complete.")	
-	
+
 	print("Load/save database images...")
-	for i, d in enumerate(dirs_database):
-		t0 = time()
-		img_database = imread(data_dir_database+'/'+d)
-		img_database = imresize(img_database, (224, 224))
-		imgs_database.append(img_database)
-		feature_database = sess.run(fc3, feed_dict={imgs: [img_database]})
-		features_database = np.vstack([features_database, feature_database])
-		
-		# Show progress, save
-		if i % step_database == 0:
-			t1 = time()
-			print("Progress: %.2f%% Time:" % (i/n_database),min(t1-t0))
-			np.save(feature_dir_database, np.array(features_database))
-			
-	np.save(feature_dir_database, np.array(features_database))
+	load_save_features(sess, data_dir_database, dirs_database, feature_dir_database)
 	print('Database images complete.')
-	
-	
-	
 	print("Saving complete.")
