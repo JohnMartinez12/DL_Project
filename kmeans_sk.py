@@ -1,6 +1,7 @@
 from os import listdir
 import numpy as np
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 np.random.seed(0)
 
 # Loading image names and vectors 
