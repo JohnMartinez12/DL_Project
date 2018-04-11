@@ -8,8 +8,10 @@ from time import time
 # /scratch/jzm218/landmark/test
 # /scratch/jzm218/landmark/index
 
-data_dir_query = 'scratch/jzm218/landmark/test'
-data_dir_database = 'scratch/jzm218/landmark/index'
+netid = 'jzm218'
+
+data_dir_query = 'scratch/'+netid+'/landmark/test'
+data_dir_database = 'scratch/'+netid+'/landmark/index'
 
 feature_dir_query = 'feature_query_np'
 feature_dir_database = 'feature_test_np'
