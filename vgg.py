@@ -5,8 +5,11 @@ import os
 from scipy.misc import imread, imresize
 from time import time
 
-data_dir_query = 'Dataset_Directory/query'
-data_dir_database = 'Dataset_Directory/test'
+# /scratch/jzm218/landmark/test
+# /scratch/jzm218/landmark/index
+
+data_dir_query = '/scratch/jzm218/landmark/test'
+data_dir_database = '/scratch/jzm218/landmark/index'
 
 feature_dir_query = 'feature_query_np'
 feature_dir_database = 'feature_test_np'
